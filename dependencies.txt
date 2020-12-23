@@ -6,10 +6,25 @@ or use distro with 3.7
 apt:
 python3-pip
 python3-tk
-libasound2-dev
+libasound2-dev (https://bugs.launchpad.net/ubuntu/+source/alsa-lib/+bug/264534)
+libpython3-dev
 
 pip
 pyalsaaudio
 cefpython3
+dataclasses
+pyserial
+
+Microphone problems in chromium?
+either alsamixer or pulseaudio helped (apt install)
+
+add udev rule:
+copy 11-arduino_clone.rules to /etc/udev/rules.d/
+(change vendor and product id accordingly (lsusb))
+
+add user to dialout group:
+sudo usermod -a -G dialout $USER
+
+restart after that!
 
 
