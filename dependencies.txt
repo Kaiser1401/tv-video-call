@@ -1,0 +1,15 @@
+python 3.7 (3.8 not yet supported by cef)
+
+so either get it somehow and setup a virtual environment
+or use distro with 3.7
+
+apt:
+python3-pip
+python3-tk
+libasound2-dev
+
+pip
+pyalsaaudio
+cefpython3
+
+
