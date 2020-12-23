@@ -22,3 +22,8 @@ This is just a firts entry, needs more documentation and love and is in early st
 * autoupdates
 
 ![interface](media/main.png)
+
+
+
+##### stuff:
+* [chromium command line switches](https://peter.sh/experiments/chromium-command-line-switches/)
