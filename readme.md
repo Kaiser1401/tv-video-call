@@ -1,5 +1,5 @@
 # Video Call Controller
-A python controller to allow my eldery parents to easily join jitsi meetings (for now) with switching their TV-input (no CeC yet) and pressing a single hardware button on a panel.
+A python controller to allow my elderly parents to easily join jitsi meetings (for now) with switching their TV-input (no CeC yet) and pressing a single hardware button on a panel.
 
 
 ### Uses
@@ -8,7 +8,9 @@ A python controller to allow my eldery parents to easily join jitsi meetings (fo
 * serial communication for the hardware buttons (run by an arduino) (with reconnection detection)
 
 ### Usage
-fire up in fullscreen, let parents hit video button, join yourself to the same room using a client of choice (browser)
+fire up in fullscreen, let parents hit video button,
+(first run needs some settings do be done with a mouse in jit.si ... )
+join yourself to the same room using a client of choice (browser)
 
 This is just a firts entry, needs more documentation and love and is in early stage
 
