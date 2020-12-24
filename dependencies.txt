@@ -1,7 +1,5 @@
 python 3.7 (3.8 not yet supported by cef)
-
-so either get it somehow and setup a virtual environment
-or use distro with 3.7
+(e.g. *ubuntu 18.04)
 
 apt:
 python3-pip
@@ -9,22 +7,24 @@ python3-tk
 libasound2-dev (https://bugs.launchpad.net/ubuntu/+source/alsa-lib/+bug/264534)
 libpython3-dev
 
-pip
+pip:
 pyalsaaudio
 cefpython3
 dataclasses
 pyserial
+mouse
 
 Microphone problems in chromium?
-either alsamixer or pulseaudio helped (apt install)
+try changing the input settings a bit in the systems sound settings
+for me either alsamixer or pulseaudio helped (apt install)
 
-add udev rule:
+Add udev rule so that the buttons always have the same device name:
 copy 11-arduino_clone.rules to /etc/udev/rules.d/
 (change vendor and product id accordingly (lsusb))
 
-add user to dialout group:
+add user to dialout group to allow serial access:
 sudo usermod -a -G dialout $USER
 
-restart after that!
+restart after the group add (actually re-login)
 
 

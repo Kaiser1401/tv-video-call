@@ -7,6 +7,7 @@ import time
 import alsaaudio  # apt install python-alsaaudio, libasound2-dev ; pip3 pyalsaaudio
 from random import randrange
 from serial import Serial  # pyserial
+import mouse
 
 
 # https://stackoverflow.com/questions/57974532/why-cant-run-both-tkinter-mainloop-and-cefpython3-messageloop
@@ -427,6 +428,9 @@ def main():
         else:
             print(e)
             exit(-1)
+
+    #move mouse to bottom right corner (e.g. far away)
+    mouse.move(10000,10000)
 
     w = setup_window(cfg, com)
     w.tk.mainloop()
