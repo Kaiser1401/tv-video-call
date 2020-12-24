@@ -27,4 +27,25 @@ sudo usermod -a -G dialout $USER
 
 restart after the group add (actually re-login)
 
+make powerbutton shutdown without asking:
+e.g. powersettings
+in lubuntu 18.04:
+also comment out
+<!--  <keybind key="XF86PowerOff">
+    <action name="Execute">
+      <command>lxsession-default quit</command>
+    </action>
+  </keybind>-->
+
+in ~/.config/openbox/lubuntu-rc-xml
+
+
+maybe for later (e.g. programm triggered reboot):
+let user reboot / shutdown without sudo rights
+create /etc/sudoers.d/reboot_privilege
+with
+<user> ALL=(root) NOPASSWD: /sbin/reboot /sbin/shutdown
+and change file mode to 0440
+
+
 
