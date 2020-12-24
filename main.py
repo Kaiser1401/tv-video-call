@@ -8,6 +8,8 @@ import alsaaudio  # apt install python-alsaaudio, libasound2-dev ; pip3 pyalsaau
 from random import randrange
 from serial import Serial  # pyserial
 import mouse
+import argparse
+
 
 
 # https://stackoverflow.com/questions/57974532/why-cant-run-both-tkinter-mainloop-and-cefpython3-messageloop
@@ -46,8 +48,10 @@ class Config(object):
 
 
 def get_jitsi_url(cfg: Config):
-    url = '%s%s#userInfo.displayName="%s"&config.startWithAudioMuted=false&config.startWithVideoMuted=false' % (cfg.server, cfg.roomname, cfg.username)
-    return url
+    url = '%s%s' % (cfg.server, cfg.roomname)
+    print('URL: '+url)
+    params = '#userInfo.displayName="%s"&config.startWithAudioMuted=false&config.startWithVideoMuted=false' % (cfg.username)
+    return url+params
 
 class ComObj(object):
 
@@ -207,6 +211,8 @@ class Fullscreen_Window:
         self.lbl_vol = tk.Label(self.frame2, text="Lautstärke ...")
         self.lbl_vol.grid(row=0, column=5, sticky='news')
 
+        self.lbl_room = tk.Label(self.frame2, text="  SERVER: %s  RAUM: %s  " % (cfg.server, cfg.roomname))
+        self.lbl_room.grid(row=0, column=7, sticky='news')
 
         self.fullscreen_state = False
         self.tk.bind("<F11>", self.toggle_fullscreen)
@@ -321,7 +327,7 @@ class Fullscreen_Window:
 
 
     def button_handler(self, button_id):
-       # print(button_id)
+        # print(button_id)
         # TODO group with current state the app is in rather than buttons
 
         if button_id == 0:  # green
@@ -414,9 +420,32 @@ def setup_window(cfg: Config, com: ComObj):
 
 def main():
     print("main ", get_ident())
+
+
+    # TODO more params / write/load config file
+    parser = argparse.ArgumentParser(description="TV-Video-Call-Interface")
+    parser.add_argument(
+        "--room", help="Use this room", type=str, default=""
+    )
+    parser.add_argument(
+        "--user", help="Use this username", type=str, default=""
+    )
+
+    args = None
+    try:
+        args = parser.parse_args()
+    except:
+        parser.print_help()
+        exit(0)
+
     cfg = Config.default()
-    #cfg.server = 'https://meet.scheible.it/'
+    cfg.server = 'https://meet.scheible.it/'
     cfg.startfullscreen = True
+
+    if args.room:
+        cfg.roomname = args.room
+    if args.user:
+        cfg.username = args.user
 
     com = None
     try:
@@ -430,7 +459,7 @@ def main():
             exit(-1)
 
     #move mouse to bottom right corner (e.g. far away)
-    mouse.move(10000,10000)
+    mouse.move(10000, 10000)
 
     w = setup_window(cfg, com)
     w.tk.mainloop()
