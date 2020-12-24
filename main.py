@@ -419,17 +419,16 @@ def setup_window(cfg: Config, com: ComObj):
 
 
 def main():
-    print("main ", get_ident())
-
-
     # TODO more params / write/load config file
+    cfg = Config.default()
+    cfg.startfullscreen = True
+
+
     parser = argparse.ArgumentParser(description="TV-Video-Call-Interface")
-    parser.add_argument(
-        "--room", help="Use this room", type=str, default=""
-    )
-    parser.add_argument(
-        "--user", help="Use this username", type=str, default=""
-    )
+
+    parser.add_argument("--server", help="Use this server", type=str, default="")
+    parser.add_argument("--room", help="Use this room", type=str, default="")
+    parser.add_argument("--user", help="Use this username", type=str, default="")
 
     args = None
     try:
@@ -438,10 +437,11 @@ def main():
         parser.print_help()
         exit(0)
 
-    cfg = Config.default()
-    cfg.server = 'https://meet.scheible.it/'
-    cfg.startfullscreen = True
+    print("-------------------------------------------")
+    print("main ", get_ident())
 
+    if args.server:
+        cfg.server = args.server
     if args.room:
         cfg.roomname = args.room
     if args.user:
