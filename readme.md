@@ -21,8 +21,10 @@ This is just a firts entry, needs more documentation and love and is in early st
 * add more functionality (e.g. picture browser for familymembers instagram, sitgnal notification with randomized room, )
 * autoupdates
 
-![interface](media/main.png)
 
+Video:
+
+[![In use](https://img.youtube.com/vi/pfmap3zhuFM/0.jpg)](https://www.youtube.com/watch?v=pfmap3zhuFM)
 
 
 ##### stuff:
