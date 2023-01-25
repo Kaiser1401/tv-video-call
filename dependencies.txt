@@ -7,6 +7,9 @@ python3-tk
 libasound2-dev (https://bugs.launchpad.net/ubuntu/+source/alsa-lib/+bug/264534)
 libpython3-dev
 
+wmctrl
+chromium-browser
+
 pip:
 pyalsaaudio
 cefpython3

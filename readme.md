@@ -4,7 +4,7 @@ A python controller to allow my elderly parents to easily join jitsi meetings (f
 
 ### Uses
 * tkinter as GUI
-* cefpython to embed chromium for webrtc usage
+* cefpython to embed chromium for webrtc usage -> removed as not really up to date. just starting a chrome now. unfortunately not longer embedded in the gui
 * serial communication for the hardware buttons (run by an arduino) (with reconnection detection)
 
 ### Usage
@@ -12,7 +12,7 @@ fire up in fullscreen, let parents hit video button,
 (first run needs some settings do be done with a mouse in jit.si ... )
 join yourself to the same room using a client of choice (browser)
 
-This is just a firts entry, needs more documentation and love and is in early stage
+This is just a first entry, needs more documentation and love and is in early stage
 
 #### my TODO:
 * add docs

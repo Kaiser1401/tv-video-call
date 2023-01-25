@@ -1,7 +1,6 @@
 from dataclasses import dataclass
 import sys
 import tkinter as tk
-from cefpython3 import cefpython as cef
 from threading import Thread, Lock, get_ident
 import time
 import alsaaudio  # apt install python-alsaaudio, libasound2-dev ; pip3 pyalsaaudio
@@ -9,6 +8,7 @@ from random import randrange
 from serial import Serial  # pyserial
 import mouse
 import argparse
+import subprocess
 
 
 
@@ -52,6 +52,20 @@ def get_jitsi_url(cfg: Config):
     print('URL: '+url)
     params = '#userInfo.displayName="%s"&config.startWithAudioMuted=false&config.startWithVideoMuted=false' % (cfg.username)
     return url+params
+
+def _window_id_from_pid(pid):
+    # 'wmctrl - lp | grep 7678 | cut - d" " - f1'
+    proc_wmctrl = subprocess.Popen(['wmctrl', '-lp'], stdout=subprocess.PIPE)
+    proc_grep = subprocess.run(['grep', f'{pid}'], stdin=proc_wmctrl.stdout, stdout=subprocess.PIPE)
+    proc_wmctrl.stdout.close()
+    return proc_grep.stdout.decode('utf-8').split(' ')[0]
+    #return subprocess.run(['ls ', '-l'], stdout=subprocess.PIPE).stdout.decode('utf-8')
+
+def _set_window_always_on_top(hex_wid,top):
+    if top:
+        subprocess.run(['wmctrl', '-ir',f'{hex_wid}','-b','add,above'])
+    else:
+        subprocess.run(['wmctrl', '-ir',f'{hex_wid}','-b','remove,above'])
 
 class ComObj(object):
 
@@ -176,11 +190,14 @@ class Fullscreen_Window:
 
         self.tk = tk.Tk()
         self.tk.protocol('WM_DELETE_WINDOW', self.on_closing)
+
+        w, h = self.tk.winfo_screenwidth(), self.tk.winfo_screenheight()
+
         self.tk.attributes('-zoomed', True)  # This just maximizes it so we can see the window. It's nothing to do with fullscreen.
-        self.mainframe = tk.Frame(self.tk, height=800, width=1200, bg='black')
-        self.frame2 = tk.Frame(self.tk, bg='black', height=200, width=200)
+        self.mainframe = tk.Frame(self.tk, height=h, width=w, bg='black')
+        self.frame2 = tk.Frame(self.tk, bg='black', height=100, width=w)
         self.mainframe.pack(side='top',  expand=True, fill='both')
-        self.frame2.pack(side='top',  expand=False, fill='both')
+        self.frame2.pack(side='top',  expand=False, fill='x')
 
         photo = tk.PhotoImage(file="media/main.png")
         photo_label = tk.Label(self.mainframe, image=photo, anchor="center")
@@ -228,7 +245,8 @@ class Fullscreen_Window:
         if cfg.startfullscreen:
             self.toggle_fullscreen()
 
-        self._attach_cef_thread()
+        #self._attach_cef_thread()
+        self._attach_ext_browser_thread()
         self.tk.after(10, self._process)  # @100Hz
 
     def __del__(self):
@@ -239,7 +257,7 @@ class Fullscreen_Window:
 
     def on_closing(self):
         self.browser_thread_signals["exit"] = True
-        self.cefthread.join()
+        self.browserthread.join()
         self.tk.destroy()
         print("exit")
 
@@ -261,10 +279,10 @@ class Fullscreen_Window:
 
 
 
+    def _attach_ext_browser_thread(self):
+        self.browserthread = Thread(target=self._ext_app_thread_loop)
+        self.browserthread.start()
 
-    def _attach_cef_thread(self):
-        self.cefthread = Thread(target=self._cef_thread_loop)
-        self.cefthread.start()
 
     def _process(self):
         # process io and such, called @ ~100Hz
@@ -351,56 +369,39 @@ class Fullscreen_Window:
         if button_id == 10:  # grey,exit,nonphysical
             self.on_closing()
 
-    def _cef_thread_loop(self):
-        print("cef_loop ", get_ident())
 
-        sys.excepthook = cef.ExceptHook
-        settings = {}
-        #settings["log_severity"] = cef.LOGSEVERITY_INFO
-        settings['remote_debugging_port']='-1'
-        settings['user_agent'] = self.cfg.useragent
-        settings['cache_path'] = self.cfg.cache_path
+    def _ext_app_thread_loop(self):
+        print("ext_loop ", get_ident())
 
-        switches = {}
-        switches['disable-gpu'] = '1'
-        #switches['disable-gpu-compositing'] = '1'
-        switches['enable-media-stream'] = '1'
-        switches['use-fake-ui-for-media-stream'] = '1'
-        print("cef init....")
-        cef.Initialize(settings, switches)
-        print("done")
 
         while not self.browser_thread_signals["exit"]:
             if self.browser_thread_signals["have_browser"]:
                 if not self.browser:
                     # setup
-                    window_info = cef.WindowInfo(self.mainframe.winfo_id())
-                    rect = [0, 0, self.mainframe.winfo_width(), self.mainframe.winfo_height()]
-                    window_info.SetAsChild(self.mainframe.winfo_id(), rect)
-                    self.browser = cef.CreateBrowserSync(window_info, url=get_jitsi_url(self.cfg))
-                    # browser = cef.CreateBrowserSync(window_info, url='https://meet.jit.si/RuralLibertiesRepeatAlso')
-                    # browser = cef.CreateBrowserSync(window_info, url='https://www.whatsmyua.info/')
-                    # browser = cef.CreateBrowserSync(window_info, url="http://mitchcapper.com/cookie.html")
+                    browser = "chromium-browser"
+                    app = f"--app={get_jitsi_url(self.cfg)}"
+                    size = f"--window-size={self.mainframe.winfo_width()},{self.mainframe.winfo_height()}"
+                    pos = f"--window-position=0,0"
+                    self.browser = subprocess.Popen([browser, app, size, pos])
                     print("browser_start")
-
-                cef.MessageLoopWork()
-                time.sleep(0.02)  # @50Hz  otherwise will take 100% cpu
+                # bring to top
+                _set_window_always_on_top(_window_id_from_pid(self.browser.pid), True) # this does not work a few times after starting the browser until there is a window
+                time.sleep(0.1)  # @10Hz  otherwise will take 100% cpu. also there is basically nothing to do here anymore after chrome runs in its own process
             else:
                 if self.browser:
                     # tear down
-                    self.browser.CloseBrowser(True)
+                    self.browser.terminate()
                     self.browser = None
                     print("browser_end")
-                cef.MessageLoopWork()
-                time.sleep(0.02) #  @50Hz otherwise will take 100% cpu
+
+                time.sleep(0.1) #  @10Hz otherwise will take 100% cpu
 
         if self.browser:
             # tear down
-            self.browser.CloseBrowser(True)
+            self.browser.terminate()
             self.browser = None
             print("browser_end")
-            cef.MessageLoopWork()
-        cef.Shutdown()
+
 
     def toggle_fullscreen(self, event=None):
         self.fullscreen_state = not self.fullscreen_state  # Just toggling the boolean
@@ -421,7 +422,7 @@ def setup_window(cfg: Config, com: ComObj):
 def main():
     # TODO more params / write/load config file
     cfg = Config.default()
-    cfg.startfullscreen = True
+    cfg.startfullscreen = False
 
 
     parser = argparse.ArgumentParser(description="TV-Video-Call-Interface")
